@@ -1,5 +1,6 @@
 use bresenham::Bresenham;
 
+use super::Style;
 use rustty::{Cell, Pos, Size, Terminal};
 use std::ops::{Index, IndexMut};
 use std::cmp::min;
@@ -129,8 +130,18 @@ impl<'a> DrawingContext<'a> {
         let line = Bresenham::new((start.0 as isize, start.1 as isize),
                                   (end.0 as isize, end.1 as isize));
         for p in line {
-            // FIXME: transform earlier to have faster access
+            // FIXME: check bounds earlier to have faster access
             self.set_cell((p.0 as usize, p.1 as usize), cell);
+        }
+    }
+
+    pub fn text<S: AsRef<str>>(&mut self, start: Pos, text: S, style: Style) {
+        let s: &str = text.as_ref();
+
+        // FIXME: check bounds earlier to avoid drawing useless chars?
+        for (idx, ch) in s.chars().enumerate() {
+            self.set_cell((start.0 + idx, start.1),
+                          Cell::new(ch, style.0, style.1, style.2));
         }
     }
 }
