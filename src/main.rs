@@ -36,6 +36,7 @@ impl<'a> DrawingContext<'a> {
         self.states.last().unwrap().size
     }
 
+    #[inline]
     fn translate(&mut self, p: Pos) {
         self.shrink(p);
         let cur = self.states.last_mut().unwrap();
@@ -65,6 +66,7 @@ impl<'a> DrawingContext<'a> {
         }
     }
 
+    #[inline]
     pub fn save(&mut self) {
         let new_state = DrawingContextState {
             translation: self.translation(),
@@ -73,6 +75,7 @@ impl<'a> DrawingContext<'a> {
         self.states.push(new_state)
     }
 
+    #[inline]
     pub fn pop(&mut self) {
         if self.states.len() <= 1 {
             panic!("Empty DrawingContext popped");
@@ -80,14 +83,17 @@ impl<'a> DrawingContext<'a> {
         self.states.pop().unwrap();
     }
 
+    #[inline]
     pub fn get_cell(&self, p: Pos) -> Option<&Cell> {
         self.transform(p).map(move |q| self.term.index(q))
     }
 
+    #[inline]
     pub fn get_mut_cell(&mut self, p: Pos) -> Option<&mut Cell> {
         self.transform(p).map(move |q| self.term.index_mut(q))
     }
 
+    #[inline]
     pub fn set_cell(&mut self, p: Pos, cell: Cell) {
         if let Some(p) = self.transform(p) {
             self.term[p] = cell;
