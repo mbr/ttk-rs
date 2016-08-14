@@ -1,3 +1,5 @@
+use bresenham::Bresenham;
+
 use rustty::{Cell, CellAccessor, Pos, Size, Terminal};
 use std::ops::{Index, IndexMut};
 
@@ -112,6 +114,15 @@ impl<'a> DrawingContext<'a> {
             for y in 0..h {
                 self.term[(x + x0, y + y0)] = cell;
             }
+        }
+    }
+
+    pub fn line(&mut self, start: Pos, end: Pos, cell: Cell) {
+        let line = Bresenham::new((start.0 as isize, start.1 as isize),
+                                  (end.0 as isize, end.1 as isize));
+        for p in line {
+            // FIXME: transform earlier to have faster access
+            self.set_cell((p.0 as usize, p.1 as usize), cell);
         }
     }
 }
