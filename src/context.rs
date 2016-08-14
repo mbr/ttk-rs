@@ -2,6 +2,7 @@ use bresenham::Bresenham;
 
 use rustty::{Cell, Pos, Size, Terminal};
 use std::ops::{Index, IndexMut};
+use std::cmp::min;
 
 pub struct DrawingContext<'a> {
     states: Vec<DrawingContextState>,
@@ -51,6 +52,13 @@ impl<'a> DrawingContext<'a> {
         if cur.size.1 >= s.1 {
             cur.size.1 -= s.1
         }
+    }
+
+    pub fn clip(&mut self, s: Size) {
+        let cur = self.states.last_mut().unwrap();
+
+        cur.size.0 = min(cur.size.0, s.0);
+        cur.size.1 = min(cur.size.1, s.1);
     }
 
     #[inline(always)]
