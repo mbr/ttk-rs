@@ -1,10 +1,11 @@
 extern crate bresenham;
 extern crate rustty;
 
-use rustty::{Cell, Terminal};
+use rustty::{Attr, Cell, Color, Terminal};
 use std::{thread, time};
 
 mod context;
+pub mod controls;
 pub mod draw;
 pub mod layout;
 mod transform;
@@ -15,6 +16,9 @@ pub use transform::{FixedSize, offset, sized, Translated};
 
 use draw::Background;
 use window::FramedWindow;
+
+pub type Style = (Color, Color, Attr);
+const DefaultStyle: Style = (Color::Default, Color::Default, Attr::Default);
 
 struct Model {
 
@@ -40,10 +44,8 @@ fn draw(term: &mut Terminal, model: &Model) {
 
     let mut vbox = Box::new(layout::VBox::new());
     vbox.push_item(layout::VBoxItem::Fixed(1, Box::new(Background::new(Cell::with_char('1')))));
-    vbox.push_item(layout::VBoxItem::Fixed(2, Box::new(Background::new(Cell::with_char('2')))));
-    vbox.push_item(layout::VBoxItem::Fixed(3, Box::new(Background::new(Cell::with_char('3')))));
     vbox.push_item(layout::VBoxItem::Expand(Box::new(Background::new(Cell::with_char('*')))));
-    vbox.push_item(layout::VBoxItem::Fixed(4, Box::new(Background::new(Cell::with_char('4')))));
+    vbox.push_item(layout::VBoxItem::Fixed(1, Box::new(Background::new(Cell::with_char('2')))));
 
 
     main.push_widget(vbox);
@@ -57,7 +59,13 @@ fn draw(term: &mut Terminal, model: &Model) {
         // create new context and draw upon it
         let mut ctx = DrawingContext::new(term);
         main.draw_on(&mut ctx);
+
+        controls::IndicatorButton::new()
+            .text("Hello")
+            .hotkey("FO")
+            .draw_on(&mut ctx);
     }
+
 
     term.swap_buffers().unwrap();
 }
