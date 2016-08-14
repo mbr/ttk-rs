@@ -1,13 +1,15 @@
 extern crate bresenham;
 extern crate rustty;
 
-use bresenham::Bresenham;
-use rustty::{Cell, CellAccessor, Pos, Size, Terminal};
+use rustty::{Cell, Terminal};
 use std::{thread, time};
-use std::convert::AsRef;
 
 mod context;
+mod layout;
+mod transform;
+
 pub use context::DrawingContext;
+pub use transform::{FixedSize, offset, sized, Translated};
 
 struct Model {
 
@@ -36,28 +38,6 @@ impl Background {
 impl Widget for Background {
     fn draw_on(&self, ctx: &mut DrawingContext) {
         ctx.fill(self.bg_cell)
-    }
-}
-
-pub struct Layers {
-    widgets: Vec<Box<Widget>>,
-}
-
-impl Layers {
-    pub fn new() -> Layers {
-        Layers { widgets: Vec::new() }
-    }
-
-    pub fn push_widget(&mut self, w: Box<Widget>) {
-        self.widgets.push(w)
-    }
-}
-
-impl Widget for Layers {
-    fn draw_on(&self, ctx: &mut DrawingContext) {
-        for w in self.widgets.iter() {
-            w.draw_on(ctx)
-        }
     }
 }
 
@@ -98,92 +78,11 @@ impl Widget for FramedWindow {
     }
 }
 
-pub struct FixedSize {
-    size: Size,
-    widget: Box<Widget>,
-}
-
-impl FixedSize {
-    pub fn new(s: Size, w: Box<Widget>) -> FixedSize {
-        FixedSize {
-            size: s,
-            widget: w,
-        }
-    }
-}
-
-impl Widget for FixedSize {
-    fn draw_on(&self, ctx: &mut DrawingContext) {
-        ctx.save();
-        let shrink_x = if ctx.size().0 > self.size.0 {
-            ctx.size().0 - self.size.0
-        } else {
-            0
-        };
-
-        let shrink_y = if ctx.size().1 > self.size.1 {
-            ctx.size().1 - self.size.1
-        } else {
-            0
-        };
-
-        ctx.shrink((shrink_x, shrink_y));
-        self.widget.draw_on(ctx);
-        ctx.restore();
-    }
-}
-
-pub struct Translated {
-    offset: Pos,
-    widget: Box<Widget>,
-}
-
-impl Translated {
-    fn new(o: Pos, w: Box<Widget>) -> Translated {
-        Translated {
-            offset: o,
-            widget: w,
-        }
-    }
-}
-
-impl Widget for Translated {
-    fn draw_on(&self, ctx: &mut DrawingContext) {
-        ctx.save();
-        ctx.translate(self.offset);
-        self.widget.draw_on(ctx);
-        ctx.restore();
-    }
-}
-
-// FIXME: not working
-// trait MoveSize {
-//     fn offset(self, offset: Pos) -> Box<Widget>;
-//     fn sized(self, size: Size) -> Box<Widget>;
-// }
-
-// impl<T: 'static + Widget + ?Sized> MoveSize for Box<T> {
-//     fn offset(self, offset: Pos) -> Box<Widget> {
-//         Box::new(Translated::new(offset, self))
-//     }
-//     fn sized(self, size: Size) -> Box<Widget> {
-//         Box::new(FixedSize::new(size, self))
-//     }
-// }
-
-fn offset(offset: Pos, widget: Box<Widget>) -> Box<Widget> {
-    Box::new(Translated::new(offset, widget))
-}
-
-fn sized(size: Size, widget: Box<Widget>) -> Box<Widget> {
-    Box::new(FixedSize::new(size, widget))
-}
-
 // later on, optimize this by caching, using Rc and such and returning
 // the same widgets over and over? also, actual rendering could optimize the
 // drawing as well?
 fn draw(term: &mut Terminal, model: &Model) {
-    let mut main = Layers::new();
+    let mut main = layout::Layers::new();
     main.push_widget(Box::new(Background::new(Cell::with_char('.'))));
     main.push_widget(offset((4, 5),
                             sized((7, 8),
@@ -195,7 +94,7 @@ fn draw(term: &mut Terminal, model: &Model) {
         main.draw_on(&mut ctx);
     }
 
-    term.swap_buffers();
+    term.swap_buffers().unwrap();
 }
 
 fn main() {

@@ -1,6 +1,6 @@
 use bresenham::Bresenham;
 
-use rustty::{Cell, CellAccessor, Pos, Size, Terminal};
+use rustty::{Cell, Pos, Size, Terminal};
 use std::ops::{Index, IndexMut};
 
 pub struct DrawingContext<'a> {
