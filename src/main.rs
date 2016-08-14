@@ -3,6 +3,7 @@ extern crate rustty;
 use rustty::{Cell, CellAccessor, Pos, Size, Terminal};
 use std::{thread, time};
 use std::ops::{Index, IndexMut};
+use std::convert::AsRef;
 
 pub struct DrawingContext<'a> {
     states: Vec<DrawingContextState>,
@@ -122,7 +123,7 @@ impl Model {
     }
 }
 
-trait Widget {
+pub trait Widget {
     fn draw_on(&self, &mut DrawingContext);
 }
 
@@ -138,8 +139,29 @@ impl Background {
 
 impl Widget for Background {
     fn draw_on(&self, ctx: &mut DrawingContext) {
-        ctx.translate((2, 3));
         ctx.fill(self.bg_cell)
+    }
+}
+
+pub struct Layers {
+    widgets: Vec<Box<Widget>>,
+}
+
+impl Layers {
+    pub fn new() -> Layers {
+        Layers { widgets: Vec::new() }
+    }
+
+    pub fn push_widget(&mut self, w: Box<Widget>) {
+        self.widgets.push(w)
+    }
+}
+
+impl Widget for Layers {
+    fn draw_on(&self, ctx: &mut DrawingContext) {
+        for w in self.widgets.iter() {
+            w.draw_on(ctx)
+        }
     }
 }
 
@@ -147,13 +169,13 @@ impl Widget for Background {
 // the same widgets over and over? also, actual rendering could optimize the
 // drawing as well?
 fn draw(term: &mut Terminal, model: &Model) {
-
-    let bg = Background::new(Cell::with_char('x'));
+    let mut main = Layers::new();
+    main.push_widget(Box::new(Background::new(Cell::with_char('x'))));
 
     {
         // create new context and draw upon it
         let mut ctx = DrawingContext::new(term);
-        bg.draw_on(&mut ctx);
+        main.draw_on(&mut ctx);
     }
 
     term.swap_buffers();
