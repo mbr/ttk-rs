@@ -243,14 +243,39 @@ impl Widget for Translated {
     }
 }
 
+// FIXME: not working
+// trait MoveSize {
+//     fn offset(self, offset: Pos) -> Box<Widget>;
+//     fn sized(self, size: Size) -> Box<Widget>;
+// }
+
+// impl<T: 'static + Widget + ?Sized> MoveSize for Box<T> {
+//     fn offset(self, offset: Pos) -> Box<Widget> {
+//         Box::new(Translated::new(offset, self))
+//     }
+//     fn sized(self, size: Size) -> Box<Widget> {
+//         Box::new(FixedSize::new(size, self))
+//     }
+// }
+
+fn offset(offset: Pos, widget: Box<Widget>) -> Box<Widget> {
+    Box::new(Translated::new(offset, widget))
+}
+
+fn sized(size: Size, widget: Box<Widget>) -> Box<Widget> {
+    Box::new(FixedSize::new(size, widget))
+}
+
 // later on, optimize this by caching, using Rc and such and returning
 // the same widgets over and over? also, actual rendering could optimize the
 // drawing as well?
 fn draw(term: &mut Terminal, model: &Model) {
     let mut main = Layers::new();
     main.push_widget(Box::new(Background::new(Cell::with_char('.'))));
-    main.push_widget(Box::new(Translated::new((2,3), Box::new(FixedSize::new (
-        (10, 10), Box::new (FramedWindow::new (Cell::with_char(' '), Cell::with_char('+'))), )))));
+    main.push_widget(offset((4, 5),
+                            sized((7, 8),
+                                  Box::new(FramedWindow::new(Cell::with_char(' '),
+                                                             Cell::with_char('+'))))));
     {
         // create new context and draw upon it
         let mut ctx = DrawingContext::new(term);
