@@ -37,7 +37,7 @@ impl<'a> DrawingContext<'a> {
     }
 
     fn translate(&mut self, p: Pos) {
-        // self.shrink(p);
+        self.shrink(p);
         let cur = self.states.last_mut().unwrap();
         cur.translation.0 += p.0;
         cur.translation.1 += p.1;
@@ -98,9 +98,9 @@ impl<'a> DrawingContext<'a> {
         let (w, h) = self.size();
         let (x0, y0) = self.translation();
 
-        for x in x0..(x0 + w) {
-            for y in y0..(y0 + h) {
-                self.term[(x, y)] = cell;
+        for x in 0..w {
+            for y in 0..h {
+                self.term[(x + x0, y + y0)] = cell;
             }
         }
     }
