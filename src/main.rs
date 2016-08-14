@@ -77,7 +77,7 @@ impl<'a> DrawingContext<'a> {
     }
 
     #[inline]
-    pub fn pop(&mut self) {
+    pub fn restore(&mut self) {
         if self.states.len() <= 1 {
             panic!("Empty DrawingContext popped");
         }
@@ -165,13 +165,92 @@ impl Widget for Layers {
     }
 }
 
+pub struct FramedWindow {
+    bg_cell: Cell,
+    frame_cell: Cell,
+}
+
+impl FramedWindow {
+    pub fn new(bg_cell: Cell, frame_cell: Cell) -> FramedWindow {
+        FramedWindow {
+            bg_cell: bg_cell,
+            frame_cell: frame_cell,
+        }
+    }
+}
+
+impl Widget for FramedWindow {
+    fn draw_on(&self, ctx: &mut DrawingContext) {
+        ctx.fill(self.bg_cell)
+    }
+}
+
+pub struct FixedSize {
+    size: Size,
+    widget: Box<Widget>,
+}
+
+impl FixedSize {
+    pub fn new(s: Size, w: Box<Widget>) -> FixedSize {
+        FixedSize {
+            size: s,
+            widget: w,
+        }
+    }
+}
+
+impl Widget for FixedSize {
+    fn draw_on(&self, ctx: &mut DrawingContext) {
+        ctx.save();
+        let shrink_x = if ctx.size().0 > self.size.0 {
+            ctx.size().0 - self.size.0
+        } else {
+            0
+        };
+
+        let shrink_y = if ctx.size().1 > self.size.1 {
+            ctx.size().1 - self.size.1
+        } else {
+            0
+        };
+
+        ctx.shrink((shrink_x, shrink_y));
+        self.widget.draw_on(ctx);
+        ctx.restore();
+    }
+}
+
+pub struct Translated {
+    offset: Pos,
+    widget: Box<Widget>,
+}
+
+impl Translated {
+    fn new(o: Pos, w: Box<Widget>) -> Translated {
+        Translated {
+            offset: o,
+            widget: w,
+        }
+    }
+}
+
+impl Widget for Translated {
+    fn draw_on(&self, ctx: &mut DrawingContext) {
+        ctx.save();
+        ctx.translate(self.offset);
+        self.widget.draw_on(ctx);
+        ctx.restore();
+    }
+}
+
 // later on, optimize this by caching, using Rc and such and returning
 // the same widgets over and over? also, actual rendering could optimize the
 // drawing as well?
 fn draw(term: &mut Terminal, model: &Model) {
     let mut main = Layers::new();
-    main.push_widget(Box::new(Background::new(Cell::with_char('x'))));
-
+    main.push_widget(Box::new(Background::new(Cell::with_char('.'))));
+    main.push_widget(Box::new(Translated::new((2,3), Box::new(FixedSize::new (
+        (10, 10), Box::new (FramedWindow::new (Cell::with_char(' '), Cell::with_char('+'))), )))));
     {
         // create new context and draw upon it
         let mut ctx = DrawingContext::new(term);
