@@ -5,7 +5,7 @@ use rustty::{Cell, Terminal};
 use std::{thread, time};
 
 mod context;
-mod layout;
+pub mod layout;
 mod transform;
 
 pub use context::DrawingContext;
