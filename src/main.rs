@@ -57,10 +57,17 @@ impl<'a> DrawingContext<'a> {
 
     #[inline(always)]
     fn transform(&self, mut p: Pos) -> Option<Pos> {
+        // Size-check bounding box is not violated
+        if p.0 > self.size().0 || p.1 > self.size().0 {
+            return None;
+        }
+
+        // translate
         p.0 += self.translation().0;
         p.1 += self.translation().1;
 
-        if p.0 < self.size().0 && p.1 < self.size().1 {
+        // check we're not drawing off-screen
+        if p.0 < self.term.cols() && p.1 < self.term.rows() {
             Some(p)
         } else {
             None
