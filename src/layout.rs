@@ -1,3 +1,4 @@
+use std::slice;
 use super::{DrawingContext, Widget};
 
 pub struct Layers {
@@ -22,57 +23,93 @@ impl Widget for Layers {
     }
 }
 
-pub enum VBoxItem {
+pub enum BoxItem {
     Fixed(usize, Box<Widget>),
     Expand(Box<Widget>),
 }
 
-pub struct VBox {
-    widgets: Vec<VBoxItem>,
+struct BoxLayout(Vec<BoxItem>);
+
+pub struct BoxLayoutIter<'a> {
+    layout_iter: slice::Iter<'a, BoxItem>,
+    expand_size: usize,
 }
+
+impl<'a> Iterator for BoxLayoutIter<'a> {
+    type Item = (usize, &'a Box<Widget>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let item = match self.layout_iter.next() {
+            None => return None,
+            Some(v) => v,
+        };
+
+        let (size, widget) = match item {
+            &BoxItem::Fixed(size, ref widget) => (size, widget),
+            &BoxItem::Expand(ref widget) => (self.expand_size, widget),
+        };
+
+        Some((size, widget))
+    }
+}
+
+impl BoxLayout {
+    fn new() -> BoxLayout {
+        BoxLayout(Vec::new())
+    }
+
+    fn iter_sized_items(&self, total_space: usize) -> BoxLayoutIter {
+        // add up fixed item space usage
+        let fixed_items = self.0
+            .iter()
+            .map(|item| match item {
+                &BoxItem::Fixed(n, _) => n,
+                _ => 0,
+            })
+            .fold(0, |n, m| n + m);
+
+        BoxLayoutIter {
+            layout_iter: self.0.iter(),
+            expand_size: total_space.saturating_sub(fixed_items),
+        }
+    }
+
+    #[inline]
+    fn push_item(&mut self, item: BoxItem) {
+        self.0.push(item)
+    }
+}
+
+pub struct VBox(BoxLayout);
 
 impl VBox {
     pub fn new() -> VBox {
-        VBox { widgets: Vec::new() }
+        VBox(BoxLayout::new())
     }
 
-    pub fn push_item(&mut self, item: VBoxItem) {
-        self.widgets.push(item)
+    pub fn push_item(&mut self, item: BoxItem) {
+        self.0.push_item(item)
     }
 }
 
 impl Widget for VBox {
     fn draw_on(&self, ctx: &mut DrawingContext) {
-        // count fixed lines
-        let fixed_lines = self.widgets
-            .iter()
-            .map(|item| match item {
-                &VBoxItem::Fixed(n, _) => n,
-                _ => 0,
-            })
-            .fold(0, |n, m| n + m);
+        let (width, height) = ctx.size();
 
-        let expand_size = ctx.size().1.saturating_sub(fixed_lines);
-
-        let width = ctx.size().0;
         let mut y = 0;
-        for item in self.widgets.iter() {
-            let (h, widget) = match item {
-                &VBoxItem::Fixed(h, ref widget) => (h, widget),
-                &VBoxItem::Expand(ref widget) => (expand_size, widget),
-            };
 
+        for (item_height, widget) in self.0.iter_sized_items(height) {
             ctx.save();
             ctx.translate((0, y));
-            ctx.clip((width, h));
+            ctx.clip((width, item_height));
             // FIXME: clip by shrinking
             widget.draw_on(ctx);
             ctx.restore();
 
-            y += h;
+            y += item_height;
 
             // we went off-screen, stop drawing
-            if y >= ctx.size().1 {
+            if y >= height {
                 break;
             }
         }
