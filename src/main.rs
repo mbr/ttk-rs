@@ -1,5 +1,7 @@
+extern crate bresenham;
 extern crate rustty;
 
+use bresenham::Bresenham;
 use rustty::{Cell, CellAccessor, Pos, Size, Terminal};
 use std::{thread, time};
 use std::ops::{Index, IndexMut};
@@ -188,7 +190,35 @@ impl FramedWindow {
 
 impl Widget for FramedWindow {
     fn draw_on(&self, ctx: &mut DrawingContext) {
-        ctx.fill(self.bg_cell)
+        let csize = (ctx.size().0 as isize, ctx.size().1 as isize);
+
+        if csize.0 < 2 || csize.1 < 2 {
+            return;
+        }
+
+        let top = 0;
+        let right = csize.0 - 1;
+        let bottom = csize.1 - 1;
+        let left = 0;
+
+        ctx.fill(self.bg_cell);
+
+        // top
+        for (x, y) in Bresenham::new((left, top), (right, top)) {
+            ctx.set_cell((x as usize, y as usize), self.frame_cell);
+        }
+        // right
+        for (x, y) in Bresenham::new((right, top), (right, bottom)) {
+            ctx.set_cell((x as usize, y as usize), self.frame_cell);
+        }
+        // bottom
+        for (x, y) in Bresenham::new((right, bottom), (left, bottom)) {
+            ctx.set_cell((x as usize, y as usize), self.frame_cell);
+        }
+        // left
+        for (x, y) in Bresenham::new((left, bottom), (left, top)) {
+            ctx.set_cell((x as usize, y as usize), self.frame_cell);
+        }
     }
 }
 
