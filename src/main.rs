@@ -84,10 +84,22 @@ impl Widget for FramedWindow {
 fn draw(term: &mut Terminal, model: &Model) {
     let mut main = layout::Layers::new();
     main.push_widget(Box::new(Background::new(Cell::with_char('.'))));
+
+    let mut vbox = Box::new(layout::VBox::new());
+    vbox.push_item(layout::VBoxItem::Fixed(1, Box::new(Background::new(Cell::with_char('1')))));
+    vbox.push_item(layout::VBoxItem::Fixed(2, Box::new(Background::new(Cell::with_char('2')))));
+    vbox.push_item(layout::VBoxItem::Fixed(3, Box::new(Background::new(Cell::with_char('3')))));
+    vbox.push_item(layout::VBoxItem::Expand(Box::new(Background::new(Cell::with_char('*')))));
+    vbox.push_item(layout::VBoxItem::Fixed(4, Box::new(Background::new(Cell::with_char('4')))));
+
+
+    main.push_widget(vbox);
     main.push_widget(offset((4, 5),
                             sized((7, 8),
                                   Box::new(FramedWindow::new(Cell::with_char(' '),
                                                              Cell::with_char('+'))))));
+
+
     {
         // create new context and draw upon it
         let mut ctx = DrawingContext::new(term);
