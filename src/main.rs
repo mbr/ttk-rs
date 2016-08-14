@@ -43,10 +43,30 @@ fn draw(term: &mut Terminal, model: &Model) {
     main.push_widget(Box::new(Background::new(Cell::with_char('.'))));
 
     let mut vbox = Box::new(layout::VBox::new());
-    vbox.push_item(layout::VBoxItem::Fixed(1, Box::new(Background::new(Cell::with_char('1')))));
-    vbox.push_item(layout::VBoxItem::Expand(Box::new(Background::new(Cell::with_char('*')))));
-    vbox.push_item(layout::VBoxItem::Fixed(1, Box::new(Background::new(Cell::with_char('2')))));
+    vbox.push_item(layout::BoxItem::Fixed(1, Box::new(Background::new(Cell::with_char('1')))));
+    vbox.push_item(layout::BoxItem::Expand(Box::new(Background::new(Cell::with_char('*')))));
 
+
+    let btn1 = Box::new(controls::IndicatorButton::new()
+        .text("Hello")
+        .size(12)
+        .hotkey("FO"));
+
+    let btn2 = Box::new(controls::IndicatorButton::new()
+        .text("World")
+        .size(12)
+        .hotkey("Wo"));
+
+    let btn3 = Box::new(controls::IndicatorButton::new()
+        .size(12)
+        .text("Meep"));
+
+    let mut hbox = Box::new(layout::HBox::new());
+    hbox.push_item(layout::BoxItem::Fixed(14, btn1));
+    hbox.push_item(layout::BoxItem::Fixed(14, btn2));
+    hbox.push_item(layout::BoxItem::Fixed(14, btn3));
+
+    vbox.push_item(layout::BoxItem::Fixed(1, hbox));
 
     main.push_widget(vbox);
     main.push_widget(offset((4, 5),
@@ -60,10 +80,6 @@ fn draw(term: &mut Terminal, model: &Model) {
         let mut ctx = DrawingContext::new(term);
         main.draw_on(&mut ctx);
 
-        controls::IndicatorButton::new()
-            .text("Hello")
-            .hotkey("FO")
-            .draw_on(&mut ctx);
     }
 
 
