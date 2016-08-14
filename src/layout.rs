@@ -115,3 +115,39 @@ impl Widget for VBox {
         }
     }
 }
+
+pub struct HBox(BoxLayout);
+
+impl HBox {
+    pub fn new() -> HBox {
+        HBox(BoxLayout::new())
+    }
+
+    pub fn push_item(&mut self, item: BoxItem) {
+        self.0.push_item(item)
+    }
+}
+
+impl Widget for HBox {
+    fn draw_on(&self, ctx: &mut DrawingContext) {
+        let (width, height) = ctx.size();
+
+        let mut x = 0;
+
+        for (item_width, widget) in self.0.iter_sized_items(width) {
+            ctx.save();
+            ctx.translate((x, 0));
+            ctx.clip((item_width, height));
+            // FIXME: clip by shrinking
+            widget.draw_on(ctx);
+            ctx.restore();
+
+            x += item_width;
+
+            // we went off-screen, stop drawing
+            if x >= width {
+                break;
+            }
+        }
+    }
+}
