@@ -2,6 +2,7 @@ use bresenham::Bresenham;
 
 use super::Style;
 use rustty::{Cell, Pos, Size, Terminal};
+use std::ascii::AsciiExt;
 use std::ops::{Index, IndexMut};
 use std::cmp::min;
 
@@ -137,6 +138,9 @@ impl<'a> DrawingContext<'a> {
 
     pub fn text<S: AsRef<str>>(&mut self, start: Pos, text: S, style: Style) {
         let s: &str = text.as_ref();
+
+        // FIXME: unicoe support
+        assert!(s.is_ascii());
 
         // FIXME: check bounds earlier to avoid drawing useless chars?
         for (idx, ch) in s.chars().enumerate() {

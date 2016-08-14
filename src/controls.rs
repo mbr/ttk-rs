@@ -1,11 +1,13 @@
 use rustty::Cell;
+use std::ascii::AsciiExt;
+use std::cmp::min;
 use super::{DefaultStyle, DrawingContext, Style, Widget};
 
 // FIXME: make other parts of framework use builder patterns too?
 pub struct IndicatorButton<'a> {
     enabled: bool,
     text: &'a str,
-    hotkey: Option<&'a str>,
+    hotkey: &'a str,
     size: usize,
 
     // FIXME: find pattern for style object, maybe using trait?
@@ -20,7 +22,7 @@ impl<'a> IndicatorButton<'a> {
         IndicatorButton {
             enabled: false,
             text: "",
-            hotkey: None,
+            hotkey: "",
             size: 12,
             active_style: DefaultStyle,
             inactive_style: DefaultStyle,
@@ -36,12 +38,14 @@ impl<'a> IndicatorButton<'a> {
 
     #[inline]
     pub fn text(mut self, text: &'a str) -> IndicatorButton<'a> {
+        assert!(text.is_ascii());
         self.text = text;
         self
     }
 
     #[inline]
-    pub fn hotkey(mut self, hotkey: Option<&'a str>) -> IndicatorButton<'a> {
+    pub fn hotkey(mut self, hotkey: &'a str) -> IndicatorButton<'a> {
+        assert!(hotkey.is_ascii());
         self.hotkey = hotkey;
         self
     }
@@ -73,8 +77,18 @@ impl<'a> IndicatorButton<'a> {
 
 impl<'a> Widget for IndicatorButton<'a> {
     fn draw_on(&self, ctx: &mut DrawingContext) {
-        // first, draw hotkey
-        // ctx.text("")
+        let btn_offset = min(self.size, self.hotkey.len());
 
+        // first, draw hotkey
+        ctx.text((0, 0), &self.hotkey[0..btn_offset], self.hotkey_style);
+
+        // then draw button
+        ctx.text((btn_offset, 0),
+                 &self.text[0..min(self.size - btn_offset, self.text.len())],
+                 if self.enabled {
+                     self.active_style
+                 } else {
+                     self.inactive_style
+                 });
     }
 }
