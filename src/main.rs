@@ -5,11 +5,14 @@ use rustty::{Cell, Terminal};
 use std::{thread, time};
 
 mod context;
+pub mod draw;
 pub mod layout;
 mod transform;
 
 pub use context::DrawingContext;
 pub use transform::{FixedSize, offset, sized, Translated};
+
+use draw::Background;
 
 struct Model {
 
@@ -23,22 +26,6 @@ impl Model {
 
 pub trait Widget {
     fn draw_on(&self, &mut DrawingContext);
-}
-
-struct Background {
-    bg_cell: Cell,
-}
-
-impl Background {
-    fn new(cell: Cell) -> Background {
-        Background { bg_cell: cell }
-    }
-}
-
-impl Widget for Background {
-    fn draw_on(&self, ctx: &mut DrawingContext) {
-        ctx.fill(self.bg_cell)
-    }
 }
 
 pub struct FramedWindow {
