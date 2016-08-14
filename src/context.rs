@@ -118,9 +118,9 @@ impl<'a> DrawingContext<'a> {
         let (w, h) = self.size();
         let (x0, y0) = self.translation();
 
-        for x in 0..w {
-            for y in 0..h {
-                self.term[(x + x0, y + y0)] = cell;
+        for x in x0..min(self.term.cols(), (w + x0)) {
+            for y in y0..min(self.term.rows(), (h + y0)) {
+                self.term[(x, y)] = cell;
             }
         }
     }
