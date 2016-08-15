@@ -41,59 +41,57 @@ pub trait Widget {
 // drawing as well?
 fn draw(term: &mut Terminal, model: &Model) {
     // create a simple model for testing right now`
-    // let mut tbl_model =
-    //     table::SimpleModel::new(vec!["First".to_owned(), "Second".to_owned(), "Third".to_owned()]);
+    let mut tbl_model =
+        table::SimpleModel::new(vec!["First".to_owned(), "Second".to_owned(), "Third".to_owned()]);
 
-    // tbl_model.push_row(vec!["1234".to_owned(), "5678".to_owned(), "90ab".to_owned()]);
-    // tbl_model.push_row(vec!["1234".to_owned(), "5678".to_owned(), "90ab".to_owned()]);
-    // tbl_model.push_row(vec!["1234".to_owned(), "5678".to_owned(), "90ab".to_owned()]);
-    // tbl_model.push_row(vec!["1234".to_owned(), "5678".to_owned(), "90ab".to_owned()]);
-    // tbl_model.push_row(vec!["1234".to_owned(), "5678".to_owned(), "90ab".to_owned()]);
+    tbl_model.push_row(vec!["1234".to_owned(), "5678".to_owned(), "90ab".to_owned()]);
+    tbl_model.push_row(vec!["1234".to_owned(), "5678".to_owned(), "90ab".to_owned()]);
+    tbl_model.push_row(vec!["1234".to_owned(), "5678".to_owned(), "90ab".to_owned()]);
+    tbl_model.push_row(vec!["1234".to_owned(), "5678".to_owned(), "90ab".to_owned()]);
+    tbl_model.push_row(vec!["1234".to_owned(), "5678".to_owned(), "90ab".to_owned()]);
 
-    // for i in 0..1000 {
-    //     tbl_model.push_row(vec!["auto-generated row".to_owned(),
-    //                             format!("row num: {}", i),
-    //                             "".to_owned()])
-    // }
-    let mut vbox: Box<layout::VBox> = Box::new(layout::VBox::new());
+    for i in 0..1000 {
+        tbl_model.push_row(vec!["auto-generated row".to_owned(),
+                                format!("row num: {}", i),
+                                "".to_owned()])
+    }
+
+    let mut vbox = Box::new(layout::VBox::new());
     vbox.push_item(layout::BoxItem::Fixed(1, Box::new(Background::new(Cell::with_char('1')))));
 
     let mut main = layout::Layers::new();
     main.push_widget(Box::new(Background::new(Cell::with_char('.'))));
 
-    // let table_view = Box::new(table::TableView::new(&tbl_model, vec![10, 10, -1]));
+    let table_view = Box::new(table::TableView::new(&tbl_model, vec![10, 10, -1]));
+    vbox.push_item(layout::BoxItem::Expand(table_view));
 
 
+    let btn1 = Box::new(controls::IndicatorButton::new()
+        .text("Hello")
+        .size(12)
+        .hotkey("FO"));
 
-    // // vbox.push_item(layout::BoxItem::Expand(table_view));
+    let btn2 = Box::new(controls::IndicatorButton::new()
+        .text("World")
+        .size(12)
+        .hotkey("Wo"));
 
+    let btn3 = Box::new(controls::IndicatorButton::new()
+        .size(12)
+        .text("Meep"));
 
-    // let btn1 = Box::new(controls::IndicatorButton::new()
-    //     .text("Hello")
-    //     .size(12)
-    //     .hotkey("FO"));
+    let mut hbox = Box::new(layout::HBox::new());
+    hbox.push_item(layout::BoxItem::Fixed(14, btn1));
+    hbox.push_item(layout::BoxItem::Fixed(14, btn2));
+    hbox.push_item(layout::BoxItem::Fixed(14, btn3));
 
-    // let btn2 = Box::new(controls::IndicatorButton::new()
-    //     .text("World")
-    //     .size(12)
-    //     .hotkey("Wo"));
-
-    // let btn3 = Box::new(controls::IndicatorButton::new()
-    //     .size(12)
-    //     .text("Meep"));
-
-    // let mut hbox = Box::new(layout::HBox::new());
-    // hbox.push_item(layout::BoxItem::Fixed(14, btn1));
-    // hbox.push_item(layout::BoxItem::Fixed(14, btn2));
-    // hbox.push_item(layout::BoxItem::Fixed(14, btn3));
-
-    // vbox.push_item(layout::BoxItem::Fixed(1, hbox));
+    vbox.push_item(layout::BoxItem::Fixed(1, hbox));
 
     main.push_widget(vbox);
-    // main.push_widget(offset((4, 5),
-    //                         sized((7, 8),
-    //                               Box::new(FramedWindow::new(Cell::with_char(' '),
-    //                                                          Cell::with_char('+'))))));
+    main.push_widget(offset((4, 5),
+                            sized((7, 8),
+                                  Box::new(FramedWindow::new(Cell::with_char(' '),
+                                                             Cell::with_char('+'))))));
 
 
     {
