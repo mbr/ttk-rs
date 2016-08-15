@@ -67,6 +67,21 @@ impl<'a> TableView<'a> {
             offset: 0,
         }
     }
+
+    pub fn header_style(mut self, style: Style) -> TableView<'a> {
+        self.header_style = style;
+        self
+    }
+
+    pub fn cell_style(mut self, style: Style) -> TableView<'a> {
+        self.cell_style = style;
+        self
+    }
+
+    pub fn offset(mut self, offset: usize) -> TableView<'a> {
+        self.offset = offset;
+        self
+    }
 }
 
 impl<'a> Widget for TableView<'a> {
