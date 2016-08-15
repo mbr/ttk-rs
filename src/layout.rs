@@ -58,7 +58,7 @@ impl<'a> BoxLayout<'a> {
         BoxLayout(Vec::new())
     }
 
-    fn iter_sized_items(&'a self, total_space: usize) -> BoxLayoutIter<'a> {
+    fn iter_sized_items<'b>(&'b self, total_space: usize) -> BoxLayoutIter<'b> {
         // add up fixed item space usage
         let fixed_items = self.0
             .iter()
