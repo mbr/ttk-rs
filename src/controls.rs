@@ -1,4 +1,3 @@
-use rustty::Cell;
 use std::ascii::AsciiExt;
 use std::cmp::min;
 use super::{DefaultStyle, DrawingContext, Style, Widget};
