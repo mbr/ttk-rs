@@ -75,7 +75,7 @@ impl<'a> BoxLayout<'a> {
     }
 
     #[inline]
-    fn push_item(&'a mut self, item: BoxItem<'a>) {
+    fn push_item(&mut self, item: BoxItem<'a>) {
         self.0.push(item)
     }
 }
@@ -87,7 +87,7 @@ impl<'a> VBox<'a> {
         VBox(BoxLayout::new())
     }
 
-    pub fn push_item(&'a mut self, item: BoxItem<'a>) {
+    pub fn push_item(&mut self, item: BoxItem<'a>) {
         self.0.push_item(item)
     }
 }
@@ -123,7 +123,7 @@ impl<'a> HBox<'a> {
         HBox(BoxLayout::new())
     }
 
-    pub fn push_item(&'a mut self, item: BoxItem<'a>) {
+    pub fn push_item(&mut self, item: BoxItem<'a>) {
         self.0.push_item(item)
     }
 }
