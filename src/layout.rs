@@ -1,21 +1,21 @@
 use std::slice;
 use super::{DrawingContext, Widget};
 
-pub struct Layers {
-    widgets: Vec<Box<Widget>>,
+pub struct Layers<'a> {
+    widgets: Vec<Box<Widget + 'a>>,
 }
 
-impl Layers {
-    pub fn new() -> Layers {
+impl<'a> Layers<'a> {
+    pub fn new() -> Layers<'a> {
         Layers { widgets: Vec::new() }
     }
 
-    pub fn push_widget(&mut self, w: Box<Widget>) {
+    pub fn push_widget(&mut self, w: Box<Widget + 'a>) {
         self.widgets.push(w)
     }
 }
 
-impl Widget for Layers {
+impl<'a> Widget for Layers<'a> {
     fn draw_on(&self, ctx: &mut DrawingContext) {
         for w in self.widgets.iter() {
             w.draw_on(ctx)
@@ -23,20 +23,20 @@ impl Widget for Layers {
     }
 }
 
-pub enum BoxItem {
-    Fixed(usize, Box<Widget>),
-    Expand(Box<Widget>),
+pub enum BoxItem<'a> {
+    Fixed(usize, Box<Widget + 'a>),
+    Expand(Box<Widget + 'a>),
 }
 
-pub struct BoxLayout(Vec<BoxItem>);
+pub struct BoxLayout<'a>(Vec<BoxItem<'a>>);
 
 pub struct BoxLayoutIter<'a> {
-    layout_iter: slice::Iter<'a, BoxItem>,
+    layout_iter: slice::Iter<'a, BoxItem<'a>>,
     expand_size: usize,
 }
 
 impl<'a> Iterator for BoxLayoutIter<'a> {
-    type Item = (usize, &'a Box<Widget>);
+    type Item = (usize, &'a Box<Widget + 'a>);
 
     fn next(&mut self) -> Option<Self::Item> {
         let item = match self.layout_iter.next() {
@@ -53,12 +53,12 @@ impl<'a> Iterator for BoxLayoutIter<'a> {
     }
 }
 
-impl BoxLayout {
-    fn new() -> BoxLayout {
+impl<'a> BoxLayout<'a> {
+    fn new() -> BoxLayout<'a> {
         BoxLayout(Vec::new())
     }
 
-    fn iter_sized_items(&self, total_space: usize) -> BoxLayoutIter {
+    fn iter_sized_items(&'a self, total_space: usize) -> BoxLayoutIter<'a> {
         // add up fixed item space usage
         let fixed_items = self.0
             .iter()
@@ -75,24 +75,24 @@ impl BoxLayout {
     }
 
     #[inline]
-    fn push_item(&mut self, item: BoxItem) {
+    fn push_item(&'a mut self, item: BoxItem<'a>) {
         self.0.push(item)
     }
 }
 
-pub struct VBox(BoxLayout);
+pub struct VBox<'a>(BoxLayout<'a>);
 
-impl VBox {
-    pub fn new() -> VBox {
+impl<'a> VBox<'a> {
+    pub fn new() -> VBox<'a> {
         VBox(BoxLayout::new())
     }
 
-    pub fn push_item(&mut self, item: BoxItem) {
+    pub fn push_item(&'a mut self, item: BoxItem<'a>) {
         self.0.push_item(item)
     }
 }
 
-impl Widget for VBox {
+impl<'a> Widget for VBox<'a> {
     fn draw_on(&self, ctx: &mut DrawingContext) {
         let (width, height) = ctx.size();
 
@@ -116,19 +116,19 @@ impl Widget for VBox {
     }
 }
 
-pub struct HBox(BoxLayout);
+pub struct HBox<'a>(BoxLayout<'a>);
 
-impl HBox {
-    pub fn new() -> HBox {
+impl<'a> HBox<'a> {
+    pub fn new() -> HBox<'a> {
         HBox(BoxLayout::new())
     }
 
-    pub fn push_item(&mut self, item: BoxItem) {
+    pub fn push_item(&'a mut self, item: BoxItem<'a>) {
         self.0.push_item(item)
     }
 }
 
-impl Widget for HBox {
+impl<'a> Widget for HBox<'a> {
     fn draw_on(&self, ctx: &mut DrawingContext) {
         let (width, height) = ctx.size();
 

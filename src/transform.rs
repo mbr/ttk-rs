@@ -2,13 +2,13 @@ use rustty::{Pos, Size};
 use super::{DrawingContext, Widget};
 
 
-pub struct FixedSize {
+pub struct FixedSize<'a> {
     size: Size,
-    widget: Box<Widget>,
+    widget: Box<Widget + 'a>,
 }
 
-impl FixedSize {
-    pub fn new(s: Size, w: Box<Widget>) -> FixedSize {
+impl<'a> FixedSize<'a> {
+    pub fn new(s: Size, w: Box<Widget + 'a>) -> FixedSize<'a> {
         FixedSize {
             size: s,
             widget: w,
@@ -16,7 +16,7 @@ impl FixedSize {
     }
 }
 
-impl Widget for FixedSize {
+impl<'a> Widget for FixedSize<'a> {
     fn draw_on(&self, ctx: &mut DrawingContext) {
         ctx.save();
         let shrink_x = if ctx.size().0 > self.size.0 {
@@ -37,13 +37,13 @@ impl Widget for FixedSize {
     }
 }
 
-pub struct Translated {
+pub struct Translated<'a> {
     offset: Pos,
-    widget: Box<Widget>,
+    widget: Box<Widget + 'a>,
 }
 
-impl Translated {
-    fn new(o: Pos, w: Box<Widget>) -> Translated {
+impl<'a> Translated<'a> {
+    fn new(o: Pos, w: Box<Widget + 'a>) -> Translated<'a> {
         Translated {
             offset: o,
             widget: w,
@@ -51,7 +51,7 @@ impl Translated {
     }
 }
 
-impl Widget for Translated {
+impl<'a> Widget for Translated<'a> {
     fn draw_on(&self, ctx: &mut DrawingContext) {
         ctx.save();
         ctx.translate(self.offset);
@@ -75,10 +75,10 @@ impl Widget for Translated {
 //     }
 // }
 
-pub fn offset(offset: Pos, widget: Box<Widget>) -> Box<Widget> {
+pub fn offset<'a>(offset: Pos, widget: Box<Widget + 'a>) -> Box<Widget + 'a> {
     Box::new(Translated::new(offset, widget))
 }
 
-pub fn sized(size: Size, widget: Box<Widget>) -> Box<Widget> {
+pub fn sized<'a>(size: Size, widget: Box<Widget + 'a>) -> Box<Widget + 'a> {
     Box::new(FixedSize::new(size, widget))
 }
