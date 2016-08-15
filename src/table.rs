@@ -1,7 +1,6 @@
 use std::ascii::AsciiExt;
 use std::cmp::{max, min};
 use super::{DEFAULT_STYLE, DrawingContext, Style, Widget};
-use super::layout::BoxLayout;
 
 pub type RowIter<'a> = Box<Iterator<Item = &'a str>>;
 
