@@ -8,6 +8,7 @@ mod context;
 pub mod controls;
 pub mod draw;
 pub mod layout;
+pub mod table;
 mod transform;
 pub mod window;
 
@@ -18,7 +19,7 @@ use draw::Background;
 use window::FramedWindow;
 
 pub type Style = (Color, Color, Attr);
-const DefaultStyle: Style = (Color::Default, Color::Default, Attr::Default);
+const DEFAULT_STYLE: Style = (Color::Default, Color::Default, Attr::Default);
 
 struct Model {
 
