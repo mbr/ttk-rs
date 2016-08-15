@@ -28,7 +28,7 @@ pub enum BoxItem {
     Expand(Box<Widget>),
 }
 
-struct BoxLayout(Vec<BoxItem>);
+pub struct BoxLayout(Vec<BoxItem>);
 
 pub struct BoxLayoutIter<'a> {
     layout_iter: slice::Iter<'a, BoxItem>,

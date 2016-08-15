@@ -40,12 +40,30 @@ pub trait Widget {
 // the same widgets over and over? also, actual rendering could optimize the
 // drawing as well?
 fn draw(term: &mut Terminal, model: &Model) {
+    // create a simple model for testing right now`
+    let mut tbl_model =
+        table::SimpleModel::new(vec!["First".to_owned(), "Second".to_owned(), "Third".to_owned()]);
+
+    tbl_model.push_row(vec!["1234".to_owned(), "5678".to_owned(), "90ab".to_owned()]);
+    tbl_model.push_row(vec!["1234".to_owned(), "5678".to_owned(), "90ab".to_owned()]);
+    tbl_model.push_row(vec!["1234".to_owned(), "5678".to_owned(), "90ab".to_owned()]);
+    tbl_model.push_row(vec!["1234".to_owned(), "5678".to_owned(), "90ab".to_owned()]);
+    tbl_model.push_row(vec!["1234".to_owned(), "5678".to_owned(), "90ab".to_owned()]);
+
+    for i in 0..1000 {
+        tbl_model.push_row(vec!["auto-generated row".to_owned(),
+                                format!("row num: {}", i),
+                                "".to_owned()])
+    }
+
     let mut main = layout::Layers::new();
     main.push_widget(Box::new(Background::new(Cell::with_char('.'))));
 
+    let table_view = Box::new(table::TableView::new(&tbl_model, vec![10, 10, -1]));
+
     let mut vbox = Box::new(layout::VBox::new());
     vbox.push_item(layout::BoxItem::Fixed(1, Box::new(Background::new(Cell::with_char('1')))));
-    vbox.push_item(layout::BoxItem::Expand(Box::new(Background::new(Cell::with_char('*')))));
+    vbox.push_item(layout::BoxItem::Expand(table_view));
 
 
     let btn1 = Box::new(controls::IndicatorButton::new()
