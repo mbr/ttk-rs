@@ -52,6 +52,8 @@ pub struct TableView<'a> {
     model: &'a TableModel<'a>,
     col_width: Vec<i32>,
     header_style: Style,
+    cell_style: Style,
+    offset: usize,
 }
 
 impl<'a> TableView<'a> {
@@ -61,6 +63,8 @@ impl<'a> TableView<'a> {
             model: model,
             col_width: col_width,
             header_style: DEFAULT_STYLE,
+            cell_style: DEFAULT_STYLE,
+            offset: 0,
         }
     }
 }
@@ -68,6 +72,10 @@ impl<'a> TableView<'a> {
 impl<'a> Widget for TableView<'a> {
     fn draw_on(&self, ctx: &mut DrawingContext) {
         let (cols, rows) = ctx.size();
+
+        if rows == 0 {
+            return;
+        }
 
         // FIXME: Solve this using a share component with Layout (needs to be
         //        decoupled from widget?
@@ -84,13 +92,38 @@ impl<'a> Widget for TableView<'a> {
             .collect();
 
         // first, draw header
-        let mut h_pos = 0;
+        let mut x_pos = 0;
         for (header, &width) in self.model.headers().zip(widths.iter()) {
             // FIXME
             assert!(header.is_ascii());
-            ctx.text((0, h_pos),
+            ctx.text((x_pos, 0),
                      &header[0..min(header.len(), width)],
-                     self.header_style)
+                     self.header_style);
+            x_pos += width;
+        }
+
+        // then, draw data rows
+        if rows < 1 {
+            return;
+        }
+
+        let num_rows = self.model.num_rows();
+        for i in 0..(rows - 1) {
+            let row_pos = i + 1;
+            let row_idx = i + self.offset;
+
+            if row_idx >= num_rows {
+                break; // nothing more to draw, exit
+            }
+
+            x_pos = 0;
+            for (cell, &width) in self.model.get_row(row_idx).zip(widths.iter()) {
+                assert!(cell.is_ascii());
+                ctx.text((x_pos, row_pos),
+                         &cell[0..min(cell.len(), width)],
+                         self.cell_style);
+                x_pos += width;
+            }
         }
     }
 }

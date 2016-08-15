@@ -62,7 +62,7 @@ fn draw(term: &mut Terminal, model: &Model) {
     let mut main = layout::Layers::new();
     main.push_widget(Box::new(Background::new(Cell::with_char('.'))));
 
-    let table_view = Box::new(table::TableView::new(&tbl_model, vec![10, 10, -1]));
+    let table_view = Box::new(table::TableView::new(&tbl_model, vec![12, 10, -1]));
     vbox.push_item(layout::BoxItem::Expand(table_view));
 
 
