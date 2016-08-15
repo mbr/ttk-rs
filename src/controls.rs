@@ -1,6 +1,6 @@
 use std::ascii::AsciiExt;
 use std::cmp::min;
-use super::{DefaultStyle, DrawingContext, Style, Widget};
+use super::{DEFAULT_STYLE, DrawingContext, Style, Widget};
 
 // FIXME: make other parts of framework use builder patterns too?
 pub struct IndicatorButton<'a> {
@@ -23,9 +23,9 @@ impl<'a> IndicatorButton<'a> {
             text: "",
             hotkey: "",
             size: 12,
-            active_style: DefaultStyle,
-            inactive_style: DefaultStyle,
-            hotkey_style: DefaultStyle,
+            active_style: DEFAULT_STYLE,
+            inactive_style: DEFAULT_STYLE,
+            hotkey_style: DEFAULT_STYLE,
         }
     }
 
