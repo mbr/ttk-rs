@@ -29,11 +29,15 @@ fn draw_view<T: Application>(term: sync::Arc<sync::Mutex<rustty::Terminal>>, app
 
 pub struct MainLoop {
     min_delay: Option<time::Duration>,
+    last_draw: time::Instant,
 }
 
 impl MainLoop {
     pub fn new() -> MainLoop {
-        MainLoop { min_delay: None }
+        MainLoop {
+            min_delay: None,
+            last_draw: time::Instant::now(),
+        }
     }
 
     pub fn min_delay(&mut self, delay: time::Duration) -> &mut MainLoop {
@@ -51,7 +55,7 @@ impl MainLoop {
         self
     }
 
-    pub fn run<T: Application>(&mut self, mut app: T) {
+    pub fn run<T: Application>(&mut self, app: T) {
         self.run_with_setup(app, |_| {});
     }
 
@@ -104,8 +108,17 @@ impl MainLoop {
                 }
             }
 
+            let now = time::Instant::now();
+
+            if let Some(min_delay) = self.min_delay {
+                if now - self.last_draw < min_delay {
+                    // do not redraw, updating too fast
+                    continue;
+                }
+            }
+
             // redraw
-            // FIXME: limit framerate
+            self.last_draw = now;
             draw_view(term.clone(), &app);
         }
 
