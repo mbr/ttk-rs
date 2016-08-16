@@ -28,19 +28,23 @@ fn draw_view<T: Application>(term: sync::Arc<sync::Mutex<rustty::Terminal>>, app
 }
 
 pub fn run_app<T: Application>(app: T) {
-    run_app_and_connect(app)
+    run_app_with_setup(app, |_| {})
 }
 
 
-pub fn run_app_and_connect<T: Application>(mut app: T) {
+pub fn run_app_with_setup<T: Application, F>(mut app: T, setup: F)
+    where F: FnOnce(sync::mpsc::Sender<<T as Application>::Action>) -> ()
+{
     // unfortunately, the rustty API is pretty bad here; we cannot draw on the
     // terminal while receiving events from it. for this reason, we need to
     // lock and poll ...
     let term = sync::Arc::new(sync::Mutex::new(rustty::Terminal::new().unwrap()));
 
     let (action_send, action_recv) = sync::mpsc::channel();
-
     let running = sync::Arc::new(sync::atomic::AtomicBool::new(true));
+
+    // run setup function
+    setup(action_send.clone());
 
     // start background thread that turns events into actions
     let bg_term = term.clone();
